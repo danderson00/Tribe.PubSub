@@ -10,7 +10,8 @@ var actor = module.exports = function (pubsub, definition, scope, dependencies) 
     this.children = [];
     this.scope = scope;
     this.metadata = {
-        expression: []
+        expression: [],
+        scope: []
     };
     this.dependencies = dependencies;
 
@@ -80,6 +81,7 @@ actor.prototype.isScopedTo = function (property) {
             ? self.scope[arg]
             : self.scope;
         self.metadata.expression.push({ p: 'data.' + arg, v: value });
+        self.metadata.scope.push(arg);
     });
 };
 
