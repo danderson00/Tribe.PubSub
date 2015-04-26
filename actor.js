@@ -21,11 +21,12 @@ var actor = module.exports = function (pubsub, definition, scope, dependencies) 
     this.topics = utils.keys(this.handles);
 
     function configureActor() {
-        if (definition)
-            if (definition.constructor === Function)
-                self.instance = new definition(self);
-            else
-                utils.copyProperties(definition, self, ['handles', 'endsChildrenExplicitly', 'onstart', 'onresume', 'onsuspend', 'onend']);
+        if (definition && definition.constructor === Function) {
+            self.instance = new definition(self);
+            self.instance.__actor = self;             
+        } else
+            throw new Error("Actor definition must be a function");
+            //utils.copyProperties(definition, self, ['handles', 'endsChildrenExplicitly', 'onstart', 'onresume', 'onsuspend', 'onend']);
     }
 };
 
@@ -67,7 +68,7 @@ actor.prototype.endChildren = function (data) {
         child.end(data);
     });
 };
-    
+
 actor.prototype.suspendChildren = function (data) {
     utils.each(this.children, function (child) {
         child.suspend(data);
