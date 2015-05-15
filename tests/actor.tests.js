@@ -208,16 +208,6 @@
         }
     });
 
-    test("messages published from actor have origin set on envelope", function () {
-        definition.handles = {
-            'testTopic': function (data, envelope) {
-                expect(envelope.origin).to.equal('actor');
-            }
-        };
-        var actor = new actorModule(pubsub, definition).start();
-        actor.pubsub.publish('testTopic');
-    });
-
     test("messages published from actor are not published to message bus when replayed", function () {
         var actor = new actorModule(pubsub, constructor).start();
         pubsub.subscribe('test2', spy);

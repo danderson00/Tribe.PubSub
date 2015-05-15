@@ -5,7 +5,7 @@
 var actor = module.exports = function (pubsub, definition, scope, dependencies) {
     var self = this;
 
-    pubsub = pubsub.createLifetime({ origin: 'actor' });
+    pubsub = pubsub.createLifetime(scope);
     this.pubsub = pubsub;
     this.children = [];
     this.scope = scope;
@@ -23,10 +23,10 @@ var actor = module.exports = function (pubsub, definition, scope, dependencies) 
     function configureActor() {
         if (definition && definition.constructor === Function) {
             self.instance = new definition(self);
-            self.instance.__actor = self;             
+            self.instance.__actor = self;
         } else
-            throw new Error("Actor definition must be a function");
-            //utils.copyProperties(definition, self, ['handles', 'endsChildrenExplicitly', 'onstart', 'onresume', 'onsuspend', 'onend']);
+            //throw new Error("Actor definition must be a function");
+            utils.copyProperties(definition, self, ['handles', 'endsChildrenExplicitly', 'onstart', 'onresume', 'onsuspend', 'onend']);
     }
 };
 

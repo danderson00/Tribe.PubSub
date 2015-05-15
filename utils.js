@@ -50,6 +50,15 @@ utils.map = function (obj, iterator, context) {
     return results;
 };
 
+utils.extend = function (target, source) {
+    var args = Array.prototype.slice.call(arguments);
+    for(var i = 1, l = args.length; i < l; i++)
+        utils.each(args[i], function (value, property) {
+            target[property] = value;
+        });
+    return target;
+};
+
 utils.keys = function (object) {
     var keys = [];
     for (var property in object)

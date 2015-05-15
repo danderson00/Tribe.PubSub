@@ -3,7 +3,7 @@
         pubsub;
 
     setup(function () {
-        pubsub = new pubsubModule();
+        pubsub = new pubsubModule({ sync: true, handleExceptions: false });
     });
 
     test("lifetime subscribers are called as normal", function() {
@@ -18,7 +18,7 @@
         assert.ok(spy1.called);
         assert.ok(spy2.called);
     });
-    
+
     test("lifetime subscribers are not called after end", function () {
         var spy1 = sinon.spy();
         var spy2 = sinon.spy();
@@ -99,12 +99,35 @@
         assert.equal(lifetime2.owner, pubsub);
     });
 
-    test("lifetime applies additional properties to published envelopes", function () {
+    test("lifetime applies scope to published envelopes", function () {
         var lifetime = pubsub.createLifetime({ p1: 'test', p2: 2 });
         lifetime.subscribe('test', function (data, envelope) {
-            expect(envelope.p1).to.equal('test');
-            expect(envelope.p2).to.equal(2);
+            expect(envelope.data.p1).to.equal('test');
+            expect(envelope.data.p2).to.equal(2);
         });
         lifetime.publishSync('test')
     });
+
+    test("lifetime scope is cumulative", function () {
+        var lifetime = pubsub
+            .createLifetime({ p1: 'test' })
+            .createLifetime({ p2: 2 });
+
+        lifetime.subscribe('test', function (data, envelope) {
+            expect(envelope.data.p1).to.equal('test');
+            expect(envelope.data.p2).to.equal(2);
+        });
+        lifetime.publishSync('test')
+    });
+
+    test("lifetime combines subscribe expression with scope", function () {
+        var lifetime = pubsub.createLifetime({ id: 'test' }),
+            spy = sinon.spy();
+
+        lifetime.subscribe('topic', spy, { p: 'data.id2', v: 'test2' });
+        lifetime.publishSync('topic', { id: 'test' });
+        lifetime.publishSync('topic', { id: 'test', id2: 'test' });
+        lifetime.publishSync('topic', { id: 'test', id2: 'test2' });
+        expect(spy.callCount).to.equal(1);
+    })
 });

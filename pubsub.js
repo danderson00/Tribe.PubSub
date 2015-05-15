@@ -13,7 +13,7 @@ var pubsub = module.exports = function (instanceOptions) {
     this.owner = this;
     this.options = instanceOptions || {};
     this.sync = option('sync');
-     
+
     var subscribers = this.subscribers = new topicList();
 
     function publish(envelope) {
@@ -34,7 +34,7 @@ var pubsub = module.exports = function (instanceOptions) {
 
         function executeSubscriber(func) {
             var exceptionHandler = option('exceptionHandler');
-            
+
             if(option('handleExceptions')  && exceptionHandler)
                 try {
                     func(envelope.data, envelope);
@@ -55,7 +55,7 @@ var pubsub = module.exports = function (instanceOptions) {
         envelope.sync = true;
         return publish(envelope);
     };
-    
+
     function createEnvelope(topicOrEnvelope, data) {
         return topicOrEnvelope && topicOrEnvelope.topic
             ? topicOrEnvelope
@@ -88,12 +88,12 @@ var pubsub = module.exports = function (instanceOptions) {
         return subscribers.remove(tokens);
     };
 
-    this.createLifetime = function (additionalProperties) {
-        return new lifetime(self, self, additionalProperties);
+    this.createLifetime = function (scope) {
+        return new lifetime(self, self, scope);
     };
 
     this.subscribeOnce = subscribeOnce;
-    
+
     function option(name) {
         return (self.options.hasOwnProperty(name)) ? self.options[name] : options[name];
     }

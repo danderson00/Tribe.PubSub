@@ -35,6 +35,18 @@
         assert.ok(utils.isArray(ifnull) && ifnull.length === 0, 'handles a null properly');
     });
 
+    test('extend modifies target and returns it', function () {
+        var target = { p1: 1 },
+            extended = utils.extend(target, { p2: 2 });
+
+        expect(extended).to.equal(target);
+        expect(extended).to.deep.equal({ p1: 1, p2: 2 });
+    });
+
+    test('extend applies all arguments', function () {
+        expect(utils.extend({}, { p1: 1 }, { p2: 2 })).to.deep.equal({ p1: 1, p2: 2 });
+    });
+
     test('copyProperties', function () {
         var source = { p1: '1', p2: '2', p3: '3' },
             target = { p1: '2' },

@@ -1,8 +1,11 @@
 ﻿var channel = require('./channel'),
     actor = require('./actor'),
-    utils = require('./utils');
+    utils = require('./utils'),
+    expressions = require('tribe.expressions');
 
-var lifetime = module.exports = function (parent, owner, additionalProperties) {
+// most of these functions should probably be prototype functions
+
+var lifetime = module.exports = function (parent, owner, scope) {
     var self = this,
         tokens = [],
         active = true;
@@ -20,7 +23,8 @@ var lifetime = module.exports = function (parent, owner, additionalProperties) {
     };
 
     this.subscribe = function (topic, func, expression) {
-        var token = parent.subscribe(topic, func, expression);
+        var expressionWithScope = expressions.combine(expression, expressions.create(this.scope, 'data'));
+        var token = parent.subscribe(topic, func, expressionWithScope);
         return recordToken(token);
     };
 
@@ -28,7 +32,7 @@ var lifetime = module.exports = function (parent, owner, additionalProperties) {
         var token = parent.subscribeOnce(topic, func);
         return recordToken(token);
     };
-    
+
     this.unsubscribe = function(token) {
         // we should really remove the token(s) from our token list, but it has trivial impact if we don't
         return parent.unsubscribe(token);
@@ -38,8 +42,8 @@ var lifetime = module.exports = function (parent, owner, additionalProperties) {
         return parent.unsubscribe(tokens);
     };
 
-    this.createLifetime = function (additionalProperties) {
-        return new lifetime(self, self.owner, additionalProperties);
+    this.createLifetime = function (additionalScope) {
+        return new lifetime(self, self.owner, utils.extend({}, scope, additionalScope));
     };
 
     this.suspend = function () {
@@ -49,7 +53,7 @@ var lifetime = module.exports = function (parent, owner, additionalProperties) {
     this.resume = function () {
         active = true;
     };
-    
+
     function recordToken(token) {
         if (utils.isArray(token))
             tokens = tokens.concat(token);
@@ -63,9 +67,14 @@ var lifetime = module.exports = function (parent, owner, additionalProperties) {
             ? topicOrEnvelope
             : { topic: topicOrEnvelope, data: data };
 
-        for (var property in additionalProperties)
-            if (additionalProperties.hasOwnProperty(property))
-                envelope[property] = additionalProperties[property];
+        if(scope) {
+            if(!envelope.data)
+                envelope.data = {};
+
+            utils.each(scope, function (value, property) {
+                envelope.data[property] = value;
+            });
+        }
 
         return envelope;
     }
@@ -78,4 +87,3 @@ lifetime.prototype.startActor = function (definition, data) {
 lifetime.prototype.channel = function (channelId) {
     return new channel(this, channelId);
 };
-

@@ -1,2 +1,3 @@
-﻿var pubsub = require('./pubsub');
+require('tribe.functional')﻿;
+var pubsub = require('./pubsub');
 module.exports = new pubsub();
